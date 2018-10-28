@@ -68,5 +68,9 @@ document.querySelector('#ripple').addEventListener('click', evt => {
     }
     requestAnimationFrame(raf);
   })
-})
+});
+
+const Authorization = 'Bearer ya29.GltEBqlPeRfL64aVnQKU_ZUjNwSQxcXs9KvaK6z5_yDH6qwgmZxd9hwekEyyoa9-SLTFgfHL4TEnRfsehACJPQ6Mz7P4xRoSBm9sIz45aV1P-xKxm7tgXeLRwJva';
+
+fetch('https://photoslibrary.googleapis.com/v1/albums', { headers:{ Authorization } }).then(data => data..json()).then(values => console.log(values));
 </script>
