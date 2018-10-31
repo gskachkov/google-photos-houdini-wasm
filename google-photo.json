@@ -1,0 +1,55 @@
+{
+    "web":{
+        "client_id":"187085682337-klf9p5hv2vhvkbrcvdc2cm85vhs85r2o.apps.googleusercontent.com",
+        "project_id":"test-ga-78f14",
+        "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+        "token_uri":"https://www.googleapis.com/oauth2/v3/token",
+        "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret":"7H2Z6u5x4-3bvPbbJSLgZuCl",
+        "javascript_origins":["https://gskachkov.github.io"]
+    }
+}
+https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/photoslibrary.readonly&redirect_uri=https://gskachkov.github.io/google-photos-houdini-wasm&client_id=187085682337-klf9p5hv2vhvkbrcvdc2cm85vhs85r2o.apps.googleusercontent.com&state=12345678901234567890123456789012&code_challenge=12345678901234567890123456789012&code_challenge_method=plain&access_type=offline&approval_prompt=force&response_type=code
+
+https://www.googleapis.com/oauth2/v3/token
+
+POST /oauth2/v3/token HTTP/1.1
+Host: www.googleapis.com
+Cache-Control: no-cache
+Postman-Token: 267b2546-f91e-7319-50f6-d7c98ae8429b
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="code"
+
+4/hgCEcyp0rH6ZzZLrlr9eR-8RwcPKCuevUk7nSOz1kljFmZzglL9bUoDJ3Wu7zSzZ86-jINUhYkjH5-_L0TC_D24
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="client_id"
+
+187085682337-klf9p5hv2vhvkbrcvdc2cm85vhs85r2o.apps.googleusercontent.com
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="code_verifier"
+
+12345678901234567890123456789012
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="client_secret"
+
+7H2Z6u5x4-3bvPbbJSLgZuCl
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="grant_type"
+
+authorization_code
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="redirect_uri"
+
+https://gskachkov.github.io/google-photos-houdini-wasm
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+
+GET /v1/mediaItems HTTP/1.1
+Host: photoslibrary.googleapis.com
+Authorization: Bearer ya29.GltGBlfHaUIEfbG8mZrl5ChN47CW5VgJZcGhjagQZ8OVjSYrO7NQUt5iESuZbuVtZ-7txtfXyXvZJ1xDofzyxOlT-f6OeEpS48B81UhdKsx0QfYjKY2QrdrSK5Q4
+Cache-Control: no-cache
+Postman-Token: 60f21bcb-e3a3-3388-68f2-e8599c116079
+

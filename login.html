@@ -1,0 +1,41 @@
+<!doctype html>
+
+<a href="https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/photoslibrary.readonly&redirect_uri=https://gskachkov.github.io/google-photos-houdini-wasm&client_id=187085682337-klf9p5hv2vhvkbrcvdc2cm85vhs85r2o.apps.googleusercontent.com&state=12345678901234567890123456789012&code_challenge=12345678901234567890123456789012&code_challenge_method=plain&access_type=offline&approval_prompt=force&response_type=code">Login</a>
+<a href="index.html">Index</a>
+
+<button onclick="login()">Login</button>
+
+<script>
+  var login = async () => {
+    const url = new URL(window.location);
+    console.log(url);
+    const code = url.searchParams.get("code");
+    console.log(code);
+    const post_url = "https://www.googleapis.com/oauth2/v3/token";
+    const body = JSON.stringify({ 
+      code,
+      client_id: '187085682337-klf9p5hv2vhvkbrcvdc2cm85vhs85r2o.apps.googleusercontent.com',
+      code_verifier: '12345678901234567890123456789012',
+      client_secret: '7H2Z6u5x4-3bvPbbJSLgZuCl',
+      grant_type: 'authorization_code',
+      redirect_uri: 'https://gskachkov.github.io/google-photos-houdini-wasm'
+    });
+  
+    const response = await fetch(post_url, { method: "POST", body});
+    console.log(response);
+    const token = await response.json();
+    console.log(token, token.access_token);
+    removeAuthCookie();
+    setAuthCookie(token.access_token);
+  };
+
+  const removeAuthCookie = () => {
+    var date = new Date(0);
+    document.cookie = "photo_auth=; path=/; expires=" + date.toUTCString();
+  };
+
+  const setAuthCookie = (value) => {
+    var date = new Date(new Date().getTime() + 360 * 1000);
+    document.cookie = `photo_auth=${value}; path=/; expire=` + date.toUTCString();
+  };
+</script>

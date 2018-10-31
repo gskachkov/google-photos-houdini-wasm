@@ -1,5 +1,6 @@
 <!doctype html>
 
+<script src="items.js"></script>
 <!--
 Copyright 2016 Google, Inc. All Rights Reserved.
 
@@ -15,62 +16,117 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<button id="ripple">
-  Click me!
-</button>
+<a onclick="window.location='login.html'+window.location.search;">login</a>
 
+<button onclick="loadPhotos()">Load Photo</button>
+<div id="album-container" class="el is-loaded"></div>
+
+<script>
+  var login = async () => {
+    const url = new URL(window.location);
+    console.log(url);
+    const code = url.searchParams.get("code");
+    console.log(code);
+    const post_url = "https://www.googleapis.com/oauth2/v3/token";
+    const body = JSON.stringify({ 
+      code,
+      client_id: '187085682337-klf9p5hv2vhvkbrcvdc2cm85vhs85r2o.apps.googleusercontent.com',
+      code_verifier: '12345678901234567890123456789012',
+      client_secret: '7H2Z6u5x4-3bvPbbJSLgZuCl',
+      grant_type: 'authorization_code',
+      redirect_uri: 'https://gskachkov.github.io/google-photos-houdini-wasm'
+    });
+    const response = await fetch(post_url, { method: "POST", body});
+    console.log(response);
+    const token = await response.json();
+    console.log(token, token.access_token);
+    removeAuthCookie();
+    setAuthCookie(token.access_token);
+  };
+
+  var loadPhotos = async () => { 
+    const authorization = 'Bearer ' + getAuthCookie();
+    console.log(authorization);
+    const result = await fetch('https://photoslibrary.googleapis.com/v1/albums', { headers: { Authorization: authorization } });
+    const albums = await result.json();
+    console.log('albums', albums.albums);
+    for(const photo of albums.albums) { 
+      addAlbum(photo);
+    }
+  };
+
+  function getAuthCookie() {
+    const name = "photo_auth";
+    var matches = document.cookie.match(new RegExp(
+      "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+  }
+
+  var albumContainer = document.getElementById('album-container');
+
+  function addAlbum(item) {
+    console.log(item);
+    var link = document.createElement('a');
+    link.href = "album.html?album_id=" + item.id;
+
+    var img = document.createElement('div');
+    img.style.cssText = 'background:url(\"' + item.coverPhotoBaseUrl + '\") no-repeat;';
+    img.className = 'custom-layout custom-image';
+
+    link.appendChild(img);
+    albumContainer.appendChild(link);
+  }
+</script>
 <style>
-#ripple {
-  width: 300px;
-  height: 300px;
-  border-radius: 150px;
-  font-size: 5em;
-  background-color: rgb(255,64,129);
-  border: 0;
-  box-shadow: 0 1px 1.5px 0 rgba(0,0,0,.12),0 1px 1px 0 rgba(0,0,0,.24);
-  color: white;
+.custom-border {
+  border: 10px solid transparent;
+  display: inline-block;
+}
 
-  --ripple-x: 0;
-  --ripple-y: 0;
-  --ripple-color: rgba(255,255,255,0.54);
-  --animation-tick: 0;
+.custom-image {
+  width: 170px;
+  height: 170px;
+  margin: 10px;
+  background-size: contain!important;
+   background-position: center center!important;
 }
-#ripple:focus {
-  outline: none;
+
+.el.is-loaded {
+    display: layout(svg-path);
+    --justify-items: center;
+    --align-items: anchor-end;
+    --path: path("M 100 300 L 150 250 Q 150 50 200 300 Q 200 50 250 300 Q 250 550 300 300 Q 315 180 345 300 Q 350 50 400 300 Q 400 550 435 300 C 450 550 450 50 500 300 C 510 330 510 150 540 375 C 550 50 550 550 600 300 A 50 50 0 1 1 700 300");
+    --viewbox: 0 0 1000 450;
+  }
+.is-loaded > div:nth-child(3) {
+  --justify-self: center;
+  --align-self: anchor-end;
 }
-#ripple.animating {
-  background-image: paint(ripple);
+
+.custom-image-effect {
+  --tooth-width: 80px;
+  --tooth-height: 30px;
+  -webkit-mask-image: paint(jagged-edge);
+}
+
+.custom-layout {
 }
 </style>
 
 <script>
-  if (location.protocol === 'http:' && location.hostname !== 'localhost')
-    location.protocol = 'https:';
-  if ('paintWorklet' in CSS) {
-    CSS.paintWorklet.addModule('paintworklet.js');
-  } else {
-    document.body.innerHTML = 'You need support for <a href="https://drafts.css-houdini.org/css-paint-api/">CSS Paint API</a> to view this demo :(';
-  }
-const button = document.querySelector('#ripple');
-let start = performance.now();
-let x, y;
-document.querySelector('#ripple').addEventListener('click', evt => {
-  button.classList.add('animating');
-  [x, y] = [evt.clientX, evt.clientY];
-  start = performance.now();
-  requestAnimationFrame(function raf(now) {
-    const count = Math.floor(now - start);
-    button.style.cssText = `--ripple-x: ${x}; --ripple-y: ${y}; --animation-tick: ${count};`;
-    if(count > 1000) {
-      button.classList.remove('animating');
-      button.style.cssText = `--animation-tick: 0`;
-      return;
+  function urlFromTag(sel) {
+    const el = document.querySelector(sel);
+    if(!el) {
+      throw new Error("Couldn’t find element");
     }
-    requestAnimationFrame(raf);
-  })
-});
+    const blob = new Blob([el.textContent], {type: "text/javascript"});
+    return URL.createObjectURL(blob);
+  }
 
-const Authorization = 'Bearer ya29.GltEBqlPeRfL64aVnQKU_ZUjNwSQxcXs9KvaK6z5_yDH6qwgmZxd9hwekEyyoa9-SLTFgfHL4TEnRfsehACJPQ6Mz7P4xRoSBm9sIz45aV1P-xKxm7tgXeLRwJva';
-
-fetch('https://photoslibrary.googleapis.com/v1/albums', { headers:{ Authorization } }).then(data => data..json()).then(values => console.log(values));
+  if ('layoutWorklet' in CSS) { 
+    CSS.layoutWorklet.addModule('layout.js')
+  } else {
+    document.body.innerHTML = 'You need support for <a href="https://drafts.css-houdini.org/css-paint-api/">CSS Layout API</a> to view this demo :(';
+  }
 </script>

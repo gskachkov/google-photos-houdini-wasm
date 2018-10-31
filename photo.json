@@ -1,0 +1,14 @@
+{
+  "creationTime": string,
+  "width": string,
+  "height": string,
+
+  // Union field metadata can be only one of the following:
+  "photo": {
+    object(Photo)
+  },
+  "video": {
+    object(Video)
+  }
+  // End of list of possible types for union field metadata.
+}

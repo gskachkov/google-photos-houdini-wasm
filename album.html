@@ -1,0 +1,179 @@
+<!doctype html>
+<!--
+Copyright 2016 Google, Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+
+<button onclick="loadPhotos()">Load Photos</button>
+<div id="photos-container" class="grid is-loaded"></div>
+
+<script>
+  var loadPhotos = async () => { 
+    const url = new URL(window.location);
+    console.log(url);
+    const albumId = url.searchParams.get("album_id");
+    console.log(albumId);
+    const authorization = 'Bearer ' + getAuthCookie();
+    console.log(authorization);
+    const body = JSON.stringify({ albumId, pageSize: 100 });
+    const result = await fetch('https://photoslibrary.googleapis.com/v1/mediaItems:search', { headers: { Authorization: authorization}, method: "POST", body });
+    const items = await result.json();
+    console.log(items);
+    console.log('items', items.mediaItems);
+    let i = 0;
+    var aContainer = document.getElementById('photos-container');
+    for(const photo of items.mediaItems) {
+      i++;
+      addPhoto(aContainer, photo, i);
+    }
+    aContainer.style.cssText = "--seed:0.383313; --width:1304; --items-width:160; --items:" + i + ";";
+  };
+
+  function getAuthCookie() {
+    const name = "photo_auth";
+    var matches = document.cookie.match(new RegExp(
+      "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+  }
+
+  function addPhoto(aContainer, photo, index) {
+    var item = document.createElement('div');
+    item.className = 'item';
+    item.style.cssText = "--id:" + index;
+  
+    var itemContent = document.createElement('div');
+    itemContent.className = 'item-inner';
+  
+    var img = document.createElement('img');
+    img.src = photo.baseUrl;
+    img.className = 'item-content';
+
+    aContainer.appendChild(item); 
+    item.appendChild(itemContent);
+    itemContent.appendChild(img);
+  }
+</script>
+<style>
+.custom-border {
+  border: 10px solid transparent;
+  display: inline-block;
+}
+
+.custom-image {
+  width: 150px;
+  height: 150px;
+  margin: 10px;
+  background-size: contain!important;
+   background-position: center center!important;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 3px;
+  --irregular-grid-x: 10;
+  --irregular-grid-y: 10;
+}
+.item {
+  height: 200px;
+  overflow: hidden;
+}
+@supports (mask-border-source: paint(irregular-grid)) {
+  .is-loaded .item {
+    overflow: visible;
+    --border-width: 20;
+    mask-border-source: paint(irregular-grid);
+    mask-border-outset: calc(1px * var(--border-width));
+  }
+}
+
+  .is-loaded .item {
+    overflow: visible;
+    --border-width: 20;
+    -webkit-mask-box-image-source: paint(irregular-grid);
+    mask-border-source: paint(irregular-grid);
+    -webkit-mask-box-image-outset: calc(1px * var(--border-width));
+    mask-border-outset: calc(1px * var(--border-width));
+  }
+
+  *,:after,:before {
+      margin: 0
+  }
+
+  .item-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+  }
+</style>
+<script language="javascript+paint">
+class JaggedEdgePainter {
+    static get inputProperties() {
+        return ['--tooth-width', '--tooth-height'];
+    }
+
+    paint(ctx, size, props) {
+        let toothWidth = props.get('--tooth-width').value;
+        let toothHeight = props.get('--tooth-height').value;
+        console.log('tool', toothWidth, toothHeight);
+        // lots of math to ensure teeth are collectively centered
+        let spaceBeforeCenterTooth = (size.width - toothWidth) / 2;
+        let teethBeforeCenterTooth = Math.ceil(spaceBeforeCenterTooth / toothWidth);
+        let totalTeeth = teethBeforeCenterTooth * 2 + 1;
+        let startX = spaceBeforeCenterTooth - teethBeforeCenterTooth * toothWidth;
+
+        // start drawing teeth from left
+        ctx.beginPath();
+        ctx.moveTo(startX, toothHeight);
+
+        // draw the top zig-zag for all the teeth
+        for (let i = 0; i < totalTeeth; i++) {
+            let x = startX + toothWidth * i;
+            ctx.lineTo(x + toothWidth / 2, 0);
+            ctx.lineTo(x + toothWidth, toothHeight);
+        }
+
+        // surround the area below the teeth and fill it all in
+        ctx.lineTo(size.width, size.height);
+        ctx.lineTo(0, size.height);
+        ctx.closePath();
+        ctx.fill();
+    }
+}
+
+registerPaint('jagged-edge', JaggedEdgePainter);
+</script>
+<script>
+  function urlFromTag(sel) {
+    const el = document.querySelector(sel);
+    if(!el) {
+      throw new Error("Couldn’t find element");
+    }
+    const blob = new Blob([el.textContent], {type: "text/javascript"});
+    return URL.createObjectURL(blob);
+  }
+
+  if (location.protocol === 'http:' && location.hostname !== 'localhost')
+    location.protocol = 'https:';
+  if ('paintWorklet' in CSS) {
+    CSS.paintWorklet.addModule('grid.js');
+  } else {
+    document.body.innerHTML = 'You need support for <a href="https://drafts.css-houdini.org/css-paint-api/">CSS Paint API</a> to view this demo :(';
+  }
+</script>
